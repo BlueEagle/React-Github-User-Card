@@ -1,26 +1,58 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import axios from 'axios'
+import UserCard from './components/UserCard';
+import { v4 as uuid } from 'uuid';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const username = 'BlueEagle'
+const api_addr = `https://api.github.com/users/${username}`
+const followers_addr = `https://api.github.com/users/${username}/followers`
+
+class App extends React.Component {
+  state = {
+    data: [],
+    followers: []
+  }
+
+  componentDidMount() {
+    axios.get(api_addr).then(res => {
+      this.setState({
+        ...this.state,
+        data: res.data
+      })
+    })
+    .then(() => {
+      axios.get(followers_addr).then(res => {
+        this.setState({
+          ...this.state,
+          followers: res.data
+        })
+      })
+    })
+  }
+
+  displayContent() {
+    return (
+      <div>
+        <UserCard data={this.state.data} />
+        {this.state.followers.map(follower => {
+          return <UserCard key={uuid()} data={follower} />
+        })}
+      </div>
+    )
+  }
+
+  render() {
+    return (
+      <div className="App">
+        <header className="App-header">
+          {this.state.data.length === 0 ? 
+          'Please wait while data loads...' : 
+          this.displayContent()}
+        </header>
+      </div>
+    )
+  };
 }
 
 export default App;
